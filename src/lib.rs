@@ -1,19 +1,24 @@
 /// Check a Luhn checksum.
 pub fn is_valid(code: &str) -> bool {
-    if code.chars().any(|x| x.is_ascii_alphabetic() || !x.is_ascii_alphanumeric()) || code.replace(" ", "").len() == 1 {
+    let code_no_whitespace = code.replace(" ", "");
+
+    if code_no_whitespace.chars().any(|x| !x.is_ascii_digit()) || 
+        code_no_whitespace.len() <= 1  || 
+        code_no_whitespace.chars().all(|x| x == '0') {
         return false;
     }
         
-    let code_num:Vec<u32> = code.chars()
-            .filter(|c| c.is_ascii_digit())
-            .map(|x| x.to_digit(10).unwrap())
+    let code_num:Vec<u32> = code_no_whitespace.chars()
+            .filter_map(|x| x.to_digit(10))
             .collect();
     
 
-    let sum: u32 = code_num.iter().rev().enumerate().step_by(2).map(|(i, &x)| {
-        match i {
-            _ if x * 2 > 9 => x * 2 - 9,
-            _ => x * 2,
+    let sum: u32 = code_num.iter().rev().step_by(2).map(|&x| {
+        let doubled = x * 2;
+        if doubled > 9 {
+            doubled - 9
+        } else {
+            doubled
         }
     }).sum();
 
